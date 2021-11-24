@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 /* router.get('/*', function (req, res) {
     res.sendFile(path.join(__dirname, '../public/index.html'), function (err) {
@@ -46,7 +47,7 @@ router.post('/register', async (req, res) => {
   }
 
 });
-module.exports = router;
+
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   // console.log(req.body);
@@ -60,6 +61,10 @@ router.post('/login', async (req, res) => {
     // };
     if (userLogin) {
       const isMatch = await bcrypt.compare(password, userLogin.password)
+
+      const token = await userLogin.generateAuthToken();
+      console.log(token);
+
       if (isMatch) {
         return res.status(200).json({ Message: 'You are Authorised' });
       } else {
@@ -74,6 +79,8 @@ router.post('/login', async (req, res) => {
   }
 });
 
+
+module.exports = router;
   // router.post('/register',(req, res)=>{
   //   // console.log(req.body);
   //   // res.json({message:req.body})
