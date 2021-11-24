@@ -7,9 +7,18 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 
 dotenv.config({path:'./config.env'});
-require('./db/conn');
+require('./db/conn');// connection 
 
-app.use(express.static('public'));
+app.use(express.json());
+
+const User = require('./model/userSchema');
+
+//middleware 
+const middleware = (req, res, next) =>{next();};
+
+ app.use(express.static('public'));
+
+app.use(require('./router/auth')); // to make router server side but not working for now
 
 app.get('/*', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/index.html'), function (err) {
