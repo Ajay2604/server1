@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcrypt');
 
 /* router.get('/*', function (req, res) {
     res.sendFile(path.join(__dirname, '../public/index.html'), function (err) {
@@ -22,46 +23,52 @@ router.post('/register', async (req, res) => {
 
   let { name, username, email, password, cpassword } = req.body;
 
-      if (!name || !username || !email || !password || !cpassword) {
-        return res.status(422).json({ error: "Plz fill all columns" });
+  try {
+    if (!name || !username || !email || !password || !cpassword) {
+      return res.status(422).json({ error: "Plz fill all columns" });
+    } else {
+      email = email.toLowerCase();
+      const userExist = await User.findOne({ email: email }); //mern#09
+      if (userExist) {
+        return res.status(422).json({ error: "Already registered" })
+      } else {
+        if (password == cpassword) {
+          const user = new User({ name, username, email, password, cpassword });
+          await user.save();
+          res.status(201).json({ message: 'User Created successfully' });
+        } else {
+          return res.status(422).json({ error: "Password do not match" })
+        }
       }
-      try {
-        email = email.toLowerCase();
-        const userExist = await User.findOne({ email: email }); //mern#09
-
-        if (userExist) {
-          return res.status(422).json({ error: "Already registered" })
-        };
-        const user = new User({ name, username, email, password, cpassword });
-
-        await user.save();
-
-        res.status(201).json({ message: 'User Created successfully' });
-
+    }
   } catch (err) {
     console.log(err);
   }
 
-})
+});
 module.exports = router;
-router.post('/login', async (req,res)=>{
-  const {email, password} = req.body;
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
   // console.log(req.body);
-  if(!email || !password){
-    return res.status(400).json({error: 'Please enter credentials'})
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Please enter credentials' })
   }
   try {
-    const userLogin = await User.findOne({email: `${email.toLowerCase()}`});
+    const userLogin = await User.findOne({ email: `${email.toLowerCase()}` });
     // if(userLogin){
     //   console.log(userLogin.password);
     // };
-    if(!userLogin){
-      return res.status(401).json({error: 'invalid credetials'});
-    };
-    if(userLogin.password !== password){
-      return res.status(401).json({error: 'invalid credetials'});
-    };
-    res.status(200).json({Message: 'You are Authorised'});
+    if (userLogin) {
+      const isMatch = await bcrypt.compare(password, userLogin.password)
+      if (isMatch) {
+        return res.status(200).json({ Message: 'You are Authorised' });
+      } else {
+        res.status(401).json({ error: 'invalid credetials ' });
+      }
+    } else {
+      return res.status(401).json({ error: 'invalid credetials' });
+    }
+
   } catch (error) {
     console.log(error);
   }

@@ -6,6 +6,7 @@ app.listen(process.env.PORT || port, () => { console.log(`Listnening at ${port}`
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 
+
 dotenv.config({path:'./config.env'});
 require('./db/conn');// connection 
 
