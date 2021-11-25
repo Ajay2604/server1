@@ -65,6 +65,11 @@ router.post('/login', async (req, res) => {
       const token = await userLogin.generateAuthToken();
       console.log(token);
 
+      res.cookie("jwtoken", token, {
+        expires:new Date(Date.now() + 3600000),
+        httpOnly:true
+      })
+
       if (isMatch) {
         return res.status(200).json({ Message: 'You are Authorised' });
       } else {
