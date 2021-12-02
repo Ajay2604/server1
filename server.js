@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const app = express();
-const port = 3000;
+const port = 5000;
 app.listen(process.env.PORT || port, () => { console.log(`Listnening at ${port}`) });
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
@@ -14,8 +14,8 @@ app.use(express.json());
 
 const User = require('./model/userSchema');
 
-//middleware 
-const middleware = (req, res, next) =>{next();};
+// //middleware 
+// const middleware = (req, res, next) =>{next();};
 
  app.use(express.static('public'));
 

@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const Authenticate = require("../middleware/authenticate");
+const cookieParser = require("cookie-parser");
+router.use(cookieParser()); // if jwtoken error
 
 /* router.get('/*', function (req, res) {
     res.sendFile(path.join(__dirname, '../public/index.html'), function (err) {
@@ -16,25 +19,24 @@ const jwt = require('jsonwebtoken');
 require('../db/conn');
 const User = require("../model/userSchema");
 
-router.get('/register', (req, res) => {
-  res.send('Hello - please register here')
-})
+
 
 router.post('/register', async (req, res) => {
-
-  let { name, username, email, password, cpassword } = req.body;
+ console.log(req.body);
+  let { username, email, password, cpassword } = req.body;
 
   try {
-    if (!name || !username || !email || !password || !cpassword) {
+    if (!username || !email || !password || !cpassword) {
       return res.status(422).json({ error: "Plz fill all columns" });
     } else {
       email = email.toLowerCase();
       const userExist = await User.findOne({ email: email }); //mern#09
       if (userExist) {
+        console.log("Already registered")
         return res.status(422).json({ error: "Already registered" })
       } else {
         if (password == cpassword) {
-          const user = new User({ name, username, email, password, cpassword });
+          const user = new User({ username, email, password, cpassword });
           await user.save();
           res.status(201).json({ message: 'User Created successfully' });
         } else {
@@ -51,6 +53,7 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   // console.log(req.body);
+
   if (!email || !password) {
     return res.status(400).json({ error: 'Please enter credentials' })
   }
@@ -84,6 +87,10 @@ router.post('/login', async (req, res) => {
   }
 });
 
+router.get('/about',Authenticate , (req, res)=>{
+  // res.send('Hello, This is about login details of user');
+  res.send(req.rootUser);
+})
 
 module.exports = router;
   // router.post('/register',(req, res)=>{
