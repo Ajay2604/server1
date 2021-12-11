@@ -6,8 +6,10 @@ app.listen(process.env.PORT || port, () => { console.log(`Listnening at ${port}`
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 
-
 dotenv.config({path:'./config.env'});
+
+// import { rateLimiterUsingThirdParty } from './middlewares';
+// app.use(rateLimiterUsingThirdParty);
 require('./db/conn');// connection 
 
 app.use(express.json());

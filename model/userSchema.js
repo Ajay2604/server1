@@ -17,7 +17,11 @@ const userSchema = new mongoose.Schema({
     },
     cpassword: {
         type: String,
-        required: true
+        required: false
+    },
+    imgUrl: {
+        type: String,
+        required: false
     },
     tokens:[
         {
@@ -31,7 +35,7 @@ const userSchema = new mongoose.Schema({
 
 //Hash the password
 userSchema.pre('save', async function (next){
-console.log('Hashing works');
+// console.log('Hashing works');
 if(this.isModified('password')){
 
     this.password = await bcrypt.hash(this.password,12);
@@ -48,7 +52,7 @@ userSchema.methods.generateAuthToken = async function () {
         await this.save();
         return token;
     } catch (error) {
-        console.log(error)
+        console.log(error);
     }
 }
 

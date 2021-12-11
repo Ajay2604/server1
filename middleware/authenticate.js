@@ -19,11 +19,12 @@ const Authenticate = async (req, res, next) => {
             throw new Error('user not found')
         } else {
             // console.log("typeOf(rootUser)",typeof(rootUser));
-            // // console.log("rootUser:", rootUser);
+            // console.log("rootUser:", rootUser);
             // console.log("rootUser.password:", rootUser.password);
             const dataUser = {
                 username: rootUser.username,
-                email: rootUser.email
+                email: rootUser.email,
+                imgUrl: rootUser.imgUrl
             }
             req.token = token;
             req.rootUser = dataUser;
