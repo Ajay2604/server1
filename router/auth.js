@@ -43,6 +43,8 @@ router.post('/register', async (req, res) => {
         sendMail(username, email, signUpToken)
           .then((result) => console.log('Email sent...', result))
           .catch((error) => console.log(error.message));
+      res.status(201).json({ message: 'please activate your email' });
+
 
         // if (password == cpassword) { // save in mongo db
         //   const user = new User({ username, email, password,cpassword});
@@ -55,6 +57,8 @@ router.post('/register', async (req, res) => {
     }
   } catch (err) {
     console.log(err);
+    res.status(422).json({ message: 'data not valid' });
+
   }
 
 });
@@ -77,9 +81,6 @@ router.post('/AuthMail', async (req, res) => {
       res.status(201).json({ message: 'User Created successfully' });
     }
 
-
-
-    // data log to DATABASE
   } catch (err) {
     console.log("err at signup token verification", err);
     res.status(400).json({ error: 'error during signup please try again later' });
@@ -103,13 +104,13 @@ router.post('/login', async (req, res) => {
       if (isMatch) {
         const token = await userLogin.generateAuthToken();
         // console.log(token);
-
+        
         res.cookie("jwtoken", token, {
           expires: new Date(Date.now() + 3600000),
           httpOnly: true
         });
 
-        return res.status(200).json({ Message: 'You are Authorised' });
+        return res.status(200).json(token);
       } else {
         res.status(401).json({ error: 'invalid credetials ' });
       }
@@ -123,10 +124,9 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/googleAuth', async (req, res) => {
-  // console.log(req.body);
-  let { tokenId } = req.body;
+  let { tokenId } = req.body; // this is google token
   try {
-    // verify token from google with google and give jwt token 
+    // verify token from google with googleAPI and give jwt token back to user
     const goggleTokenVerified = await client.verifyIdToken({ idToken: tokenId, audience: "981651724564-lhl0q94397rk4s46i2311ot6h6k6j5bm.apps.googleusercontent.com" })
 
     const { email, email_verified, name, picture } = goggleTokenVerified.payload;
@@ -174,6 +174,29 @@ router.post('/googleAuth', async (req, res) => {
   }
 });
 
+router.post('/forgot-password', async(req,res)=>{
+  try {
+    const {email} = req.body;
+    const userExist = await User.findOne({ email: email });
+    if(!userExist){
+      res.status(404).json({message:"user does not exist"});
+    }else{
+      const forgotPassSecret = process.env.SECRET_KEY + userExist.password;
+      const { username, email, password } = userExist
+      let passResetToken = jwt.sign({ username, email, password }, forgotPassSecret, { expiresIn: '20m' });
+      
+      passResetMail(username, email, passResetToken)
+          .then((result) => console.log('Email sent...', result))
+          .catch((error) => console.log(error.message));
+      res.status(201).json({ message: 'please activate your email' });
+
+    }
+    
+  } catch (error) {
+    console.log(error)
+  }
+})
+router.post('/reset-password', async(req,res)=>{})
 
 router.get('/about', Authenticate, (req, res) => {
   res.send(req.rootUser);
