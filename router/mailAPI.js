@@ -102,7 +102,7 @@ async function passResetMail(username, email, passResetToken) {
             },
         });
 
-        const mailHTML = `<table>
+        const mailHTML2 = `<table>
             <td style="vertical-align:top" width="580" valign="top" align="left">
             <span
             style="font-family:Roboto,SegoeUI,Helvetica,Arial,sans-serif;line-height:20px;font-size:14px;color:#3b3855">
@@ -139,15 +139,15 @@ async function passResetMail(username, email, passResetToken) {
             NovelPLus
             </span> </td>    </tr></tbody></table></td></table>
             `
-        const mailOptions = {
+        const mailOptions2 = {
             from: 'noReplay@readnovelplus.com <daf260498@gmail.com>',
             to: `${email}`,
             subject: '[Action required] Reset Password for your NovelPLus account',
             text: ``,
-            html: `${mailHTML}`,
+            html: `${mailHTML2}`,
         };
         console.log(passResetToken);
-        const result = await transport.sendMail(mailOptions);
+        const result = await transport.sendMail(mailOptions2);
         return result;
     } catch (error) {
         return error;
