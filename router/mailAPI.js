@@ -147,7 +147,7 @@ async function passResetMail(username, email, passResetToken) {
             html: `${mailHTML2}`,
         };
         console.log(passResetToken);
-        const result = await transport.sendMail(mailOptions2);
+        const result = await transport.passResetMail(mailOptions2);
         return result;
     } catch (error) {
         return error;
