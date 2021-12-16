@@ -123,7 +123,7 @@ async function passResetMail(username, email, passResetToken) {
             </tr>
             <tr>
             <td style="vertical-align:top" valign="top" align="left" height="14">
-            <a href="${HOST_URL}/forgot-password/${passResetToken}"
+            <a href="${HOST_URL}/reset-password/${passResetToken}-NovelPlusUser=${email}"
             style="font-weight:bold;text-decoration:none;line-height:14px;font-family:Roboto,SegoeUI,Helvetica,Arial,sans-serif;font-size:14px;color:#ffffff"
             target="_blank"
             style="font-weight:bold;text-decoration:none;line-height:14px;font-family:Roboto,SegoeUI,Helvetica,Arial,sans-serif;font-size:14px;color:#ffffff">Verify

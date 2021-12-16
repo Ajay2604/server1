@@ -4,10 +4,12 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Authenticate = require("../middleware/authenticate");
 const rateLimiterUsingThirdParty = require("../middleware/ratelimiter");
+const APILimit = require("../middleware/ratelimiter");
+const APILimitForAccountCreation = require("../middleware/ratelimiter");
 const cookieParser = require("cookie-parser");
 const { OAuth2Client } = require('google-auth-library');
-
 const sendMail = require('./mailAPI');
+const passResetMail = require('./mailAPI');
 
 
 router.use(cookieParser()); // if jwtoken error
@@ -20,8 +22,10 @@ const api_key = "009d5a6bc1b05504b17266a5b69dbac8-7005f37e-b715f431";
 require('../db/conn');
 const User = require("../model/userSchema");
 
-
 router.use(rateLimiterUsingThirdParty);
+router.use('/forgot-password', APILimit);
+router.use('/register', APILimitForAccountCreation);
+
 router.post('/register', async (req, res) => {
   // console.log(req.body);
   let { username, email, password, cpassword } = req.body;
@@ -176,8 +180,10 @@ router.post('/googleAuth', async (req, res) => {
 
 router.post('/forgot-password', async(req,res)=>{
   try {
+    console.log(req.body)
     const {email} = req.body;
     const userExist = await User.findOne({ email: email });
+    console.log("userexist=",userExist);
     if(!userExist){
       res.status(404).json({message:"user does not exist"});
     }else{
@@ -188,7 +194,7 @@ router.post('/forgot-password', async(req,res)=>{
       passResetMail(username, email, passResetToken)
           .then((result) => console.log('Email sent...', result))
           .catch((error) => console.log(error.message));
-      res.status(201).json({ message: 'please activate your email' });
+      res.status(200).json({ message: 'please activate your email' });
 
     }
     
@@ -196,7 +202,25 @@ router.post('/forgot-password', async(req,res)=>{
     console.log(error)
   }
 })
-router.post('/reset-password', async(req,res)=>{})
+router.post('/reset-password', async(req,res)=>{
+  try {
+    console.log("resetpassrequest=", req.body)
+    const {email, password, resetToken} = req.body;
+    const userExist = await User.findOne({ email: email });
+    const resetPassSecret = process.env.SECRET_KEY + userExist.password;
+    const verifyToken = jwt.verify(resetToken, resetPassSecret);
+    console.log(verifyToken.email,"210")
+    if(verifyToken.email == email){
+      userExist.password = password;
+      await userExist.save();
+      console.log("$",email,"password reset")
+      res.status(200).json({message:"Password Reset successful"})
+    }
+  } catch (err) {
+    res.status(400).json({error:"Invalid or Exipred link"})
+
+  }
+})
 
 router.get('/about', Authenticate, (req, res) => {
   res.send(req.rootUser);
