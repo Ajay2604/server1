@@ -21,7 +21,7 @@ const User = require('./model/userSchema');
 
  app.use(express.static('public'));
 
-app.use(require('./router/auth')); // to make router server side but not working for now
+app.use(require('./router/auth')); 
 
 app.get('/*', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/index.html'), function (err) {

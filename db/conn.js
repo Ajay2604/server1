@@ -11,6 +11,6 @@ const dbConnect = async () => {
       useunifiedTopology: true,
       // useFindAndModify:false // old version of mongoDB
     })
-    console.log("Connection done ")
+    console.log("Connection done with database ")
   };
   dbConnect().catch((err) => { console.log("Connction failed to DB", err) });

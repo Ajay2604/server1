@@ -10,14 +10,14 @@ const rateLimiterUsingThirdParty = rateLimit({
 
 const APILimit = rateLimit({
   windowMs: 5* 60 * 1000, // 2 in 300seconds
-  max: 3,
+  max: 60,//3
   message: 'You have exceeded request limit for your IP. please wait few seconds!', 
   headers: true,
 });
 
 const APILimitForAccountCreation = rateLimit({
   windowMs: 60* 60 * 1000, // 10 in 1 hr
-  max: 10,
+  max: 60, //10
   message: 'You have exceeded request limit for your IP. please wait few minutes!', 
   headers: true,
 });
