@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 
 const commentSchema = new mongoose.Schema(
     {
@@ -10,6 +8,10 @@ const commentSchema = new mongoose.Schema(
         },
         book_Title: {
             type: String,
+            required: true
+        },
+        rating: {
+            type: Number,
             required: true
         },
         comments: [
@@ -33,6 +35,6 @@ const commentSchema = new mongoose.Schema(
 
 
 
-const comment = mongoose.model('COMMENT',commentSchema);
+const Comment = mongoose.model('COMMENT',commentSchema);
 
-module.exports = comment;
+module.exports = Comment;

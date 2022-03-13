@@ -26,6 +26,10 @@ const bookInfoSchema = new mongoose.Schema(
             type: String,
             required: true
         },
+        authorEmail:{
+            type: String,
+            required: false
+        },
         total_Chapter: {
             type: Number,
             required: false
@@ -38,17 +42,17 @@ const bookInfoSchema = new mongoose.Schema(
             type: Date,
             required: false
         },
-        chapter_Description: {
+        book_Description: {
             type: String,
             required: true
         },
         genre: [{
             type: String,
-            required: true
+            required: false
         }],
         is_Completed: {
             type: Boolean,
-            required: true
+            required: false
         },
         is_Translated: {
             type: Boolean,
@@ -96,15 +100,15 @@ const bookInfoSchema = new mongoose.Schema(
             {
                 chapter_Index: {
                     type: Number,
-                    required: true
+                    required: false
                 },//1,
-                chapter_title: {
+                chapter_Title: {
                     type: String,
-                    required: true
+                    required: false
                 },// "Chapter 1 - Prologue",
                 url: {
                     type: String,
-                    required: true
+                    required: false
                 }// "telegrambotURL/documentIndex"
             }
         ]
@@ -112,6 +116,6 @@ const bookInfoSchema = new mongoose.Schema(
 );
 
 
-const bookInfo = mongoose.model('BOOKINFO',bookInfoSchema);
+const BookInfo = mongoose.model('BOOKINFO',bookInfoSchema);
 
-module.exports = bookInfo;
+module.exports = BookInfo;

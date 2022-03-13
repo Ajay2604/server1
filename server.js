@@ -6,7 +6,7 @@ app.listen(process.env.PORT || port, () => { console.log(`Listnening at ${port}`
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 
-dotenv.config({path:'./config.env'});
+dotenv.config({ path: './config.env' });
 
 // import { rateLimiterUsingThirdParty } from './middlewares';
 // app.use(rateLimiterUsingThirdParty);
@@ -19,9 +19,9 @@ const User = require('./model/userSchema');
 // //middleware 
 // const middleware = (req, res, next) =>{next();};
 
- app.use(express.static('public'));
+app.use(require('./router/auth'));
+app.use(express.static('public'));
 
-app.use(require('./router/auth')); 
 
 app.get('/*', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/index.html'), function (err) {

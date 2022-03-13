@@ -13,8 +13,11 @@ const registerMail = require('../MailAPIs/registerMailAPI'); // to send register
 const passResetMail = require('../MailAPIs/passResetMailAPI'); // Password reset mail
 const TelegramBot = require('node-telegram-bot-api'); // Telegram Bot
 const fs = require('fs'); // File System- to edit and modify
-require('../db/conn'); // data base connection
 const User = require("../model/userSchema"); // user schema addition
+const BookInfo = require("../model/bookInfoSchema"); // BookInfo schema addition
+const Like = require("../model/likeSchema"); // likes schema addition
+const Comment = require("../model/commentSchema"); // user schema addition
+require('../db/conn'); // data base connection
 
 
 router.use(cookieParser()); // if jwtoken error
@@ -22,32 +25,68 @@ const client = new OAuth2Client(process.env.CLIENT_ID)
 
 const signOutTime = 3600000; // mili seconds
 
-router.use(rateLimiterUsingThirdParty);
-router.use('/forgot-password', APILimit);
-router.use('/register', APILimitForAccountCreation);
+// router.use(rateLimiterUsingThirdParty);
+// router.use('/forgot-password', APILimit);
+// router.use('/register', APILimitForAccountCreation);
 
-//Telegram bot for sending data
-const sender_bot_token = '5017264133:AAGM8jahot-3zAUbP84jXOHl-AVD8cklJ0Q';
+//Telegram bot for sending data to telegram group
+const sender_bot_token = process.env.sender_bot_token; // electron
 const bot = new TelegramBot(sender_bot_token, { polling: true });
 
+
+//...............................................................get functions ////.......................................
 router.get('/telegramBotCheck', async () => {
   try {
+    let chatId = process.env.telegram_chatId;
     console.log('bot code working');
-    // bot.sendMessage(-1001718616330, 'someone visited ');
-    let chatId = '-1001718616330'
+    bot.sendMessage(chatId, 'bot working ');
     const fileOptions = {
       // Explicitly specify the file name.
       filename: 'customfilename.json',
       // Explicitly specify the MIME type.
       contentType: 'application/json',
     };
-    bot.sendDocument(chatId, "./localdata/index.json", {}, fileOptions);
+    // bot.sendDocument(chatId, "./localdata/index.json", {}, fileOptions);
 
   } catch (error) {
     console.log(error);
   }
 })
+router.get('/:slug/getChapter', async (req, res) => {
+  try {
+    console.log("req for book info")
+    let  book_Title = req.params.slug.trim().toLowerCase().replace(" ", "-");
+    const bookExist = await BookInfo.findOne({ book_Title: book_Title }); //mern#09
+    if (bookExist) {
+      const { bookId, book_Title, bookCover_URL, volume_Index, volume_Title, author, genre, total_Chapter, last_Updated_Chapter, book_Description, likes_Numbers, comments_Numbers, rating_Average } = bookExist
 
+      // {bookinfo block} //...
+      //make book info json
+      let bookInfo1 = { bookId, book_Title, bookCover_URL, volume_Index, volume_Title, author, genre, total_Chapter, last_Updated_Chapter, book_Description, likes_Numbers, comments_Numbers, rating_Average }
+      res.status(200).send(bookInfo1)
+      // ...//
+    } else {
+      res.status(404).send({ data: "error no book found" })
+    }
+
+  } catch (error) {
+    console.log(error)
+    res.status(400).send({ data: "page not found" })
+  }
+})
+router.get('/:slug/:slug2/getChapter', async (req, res) => {
+  try {
+    let  book_Title = req.params.slug.trim().toLowerCase().replace(" ", "-");
+    const bookExist = await BookInfo.findOne({ book_Title: book_Title }); //mern#09
+    console.log("bookExist==>", bookExist.chapters)
+    // {chapter block} //...
+
+    // ...//
+  } catch (error) {
+
+  }
+})
+// post functions 
 router.post('/register', async (req, res) => {
   try {
     // console.log(req.body);
@@ -70,14 +109,6 @@ router.post('/register', async (req, res) => {
           .catch((error) => console.log(error.message));
         res.status(201).json({ message: 'please activate your email' });
 
-
-        // if (password == cpassword) { // save in mongo db
-        //   const user = new User({ username, email, password,cpassword});
-        //   await user.save();
-        //   res.status(201).json({ message: 'User Created successfully' });
-        // } else {
-        //   return res.status(422).json({ error: "Password do not match" });
-        // }
       }
     }
   } catch (err) {
@@ -129,9 +160,9 @@ router.post('/login', async (req, res) => {
         // console.log(token);
 
         res.cookie("jwtoken", token, {
-          expires: new Date(Date.now() + 3600000),
+          expires: new Date(Date.now() + 36000000),
           httpOnly: true
-        });
+        });// 10 hours expiry
 
         return res.status(200).json(token);
       } else {
@@ -224,7 +255,7 @@ router.post('/forgot-password', async (req, res) => {
 
 router.post('/reset-password', async (req, res) => {
   try {
-    console.log("resetpassrequest=", req.body)
+    console.log("resetpassrequest==>", req.body)
     const { email, password, resetToken } = req.body;
     const userExist = await User.findOne({ email: email });
     const resetPassSecret = process.env.SECRET_KEY + userExist.password;
@@ -249,7 +280,7 @@ router.get('/about', Authenticate, async (req, res) => {
 router.post('/registerChapter', AuthenticateMaster, async (req, res) => {
   console.log("req.body==>", req.body)
   try {
-    const { bookName, chapterName, chapterIndex, chapterBody } = req.body;
+    const { bookName, chapterName, chapterIndex } = req.body;
 
     // {need to make file from above data}
 
@@ -257,20 +288,19 @@ router.post('/registerChapter', AuthenticateMaster, async (req, res) => {
     let chatId = process.env.telegram_chatId;
     let fileName = `${bookName}_${chapterIndex}_${chapterName}.json`;
     let filePath = `./localdata/${fileName}`;
-    console.log("260");
+
     await fs.writeFile(filePath, JSON.stringify(req.body, null, 2), err => {
       if (err) {
         console.log("error in wrinting file==>", err);
       }
     });
-    console.log("266");
+
     const fileOptions = {
-
       filename: fileName,       // Explicitly specify the file name.
-
       contentType: 'application/json'    // Explicitly specify the MIME type.
     };
-    bot.sendMessage(-1001718616330, 'some documents i am sharing');
+
+    // bot.sendMessage(chatId, 'some documents i am sharing');
 
     fs.stat(filePath, function (err, stats) {
       // console.log(stats);//here we got all information of file in stats variable
@@ -279,7 +309,6 @@ router.post('/registerChapter', AuthenticateMaster, async (req, res) => {
       }
 
       bot.sendDocument(chatId, filePath, {}, fileOptions); // here we send the file through telegram bot
-      console.log("282");
       setTimeout(() => {
         // fs.unlinkSync(filePath);
         fs.unlink(filePath, function (err) {
@@ -290,11 +319,77 @@ router.post('/registerChapter', AuthenticateMaster, async (req, res) => {
       }, 5000);
     });
 
-    console.log("293");
-
     res.status(200).json({ message: "chapter added successful" })
   } catch (error) {
     console.log("chapter entry error ==>", error)
+  }
+});
+
+router.post('/registerBook', Authenticate, async (req, res) => {
+  // console.log("req.body==>", req.body)
+  try {
+    let { bookId, book_Title, bookCover_URL, volume_Index, volume_Title, author, genre, total_Chapter, last_Updated_Chapter, book_Description, likes_Numbers, comments_Numbers, rating_Average} = req.body;
+    const chapters = [];
+    book_Title = book_Title.trim().toLowerCase().replace(" ", "-");
+
+    // const genre = [];
+    const authorEmail = req.rootUser.email
+    const bookExist = await BookInfo.findOne({ book_Title: book_Title }); //mern#09
+    if (bookExist) {
+      if (bookExist.authorEmail === req.rootUser.email || req.rootUser.email === process.env.masterEmail1 || req.rootUser.email === process.env.masterEmail2) {
+        //update the book
+       
+        bookExist.book_Title = bookTitleTemp; bookExist.genre = genre; bookExist.bookCover_URL = bookCover_URL; bookExist.volume_Index = volume_Index; bookExist.volume_Title = volume_Title; bookExist.author = author; bookExist.total_Chapter; bookExist.book_Description = book_Description;
+        await bookExist.save();
+        return res.status(201).json({ Message: "book updated" });
+      } else {
+        return res.status(401).json({ Message: "Invalid request" });
+      }
+    } else {
+      const book = new BookInfo({ bookId, book_Title, bookCover_URL, genre, volume_Index, volume_Title, author, authorEmail, total_Chapter, last_Updated_Chapter, book_Description, likes_Numbers, comments_Numbers, rating_Average, chapters });
+      await book.save();
+      res.status(200).json({ message: 'Book registered' });
+
+    }
+
+  } catch (error) {
+    console.log("book entry error ==>", error)
+    return res.status(401).json({ Message: "Invalid request" });
+
+  }
+});
+
+router.post('/bookInfo', Authenticate, async (req, res) => {
+  try {
+
+    // console.log(req.body)
+    let { book_Title } = req.body;
+    book_Title = book_Title.trim().toLowerCase().replace(" ", "-");
+
+    const bookExist = await BookInfo.findOne({ book_Title: book_Title }); //mern#09
+
+    // console.log("book==>", bookExist)
+
+    if (bookExist) {
+      if (bookExist.authorEmail === req.rootUser.email || req.rootUser.email === process.env.masterEmail1 || req.rootUser.email === process.env.masterEmail2) {
+        // res.status(200).json(JSON.stringify(bookExist));
+        const { bookId, book_Title, bookCover_URL, volume_Index, volume_Title, author, genre, total_Chapter, last_Updated_Chapter, book_Description, likes_Numbers, comments_Numbers, rating_Average } = bookExist
+
+        const bookDetails = {
+          bookId, book_Title, bookCover_URL, volume_Index, volume_Title, author, genre, total_Chapter, last_Updated_Chapter, book_Description, likes_Numbers, comments_Numbers, rating_Average
+        }
+        res.send(bookDetails);
+      } else {
+        res.status(401).json({ error: 'invalid credetials' });
+      }
+    } else {
+      res.status(402).json({ error: 'book not found' });
+      //
+    }
+  } catch (error) {
+    console.log(error)
+    res.status(401).json({ error: 'invalid credetials or book not found' });
+
   }
 });
 
