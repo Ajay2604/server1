@@ -50,63 +50,74 @@ const signOutTime = 3600000; // mili seconds
 //     console.log(error);
 //   }
 // })
-router.get("/:slug/getChapter", async (req, res) => {
+router.get("/getBook",async(req,res)=>{
   try {
-    console.log("req for book info");
-    let book_Title = req.params.slug.trim().toLowerCase().replace(" ", "-");
-    const bookExist = await BookInfo.findOne({ book_Title: book_Title }); //mern#09
-    if (bookExist) {
-      const {
-        bookId,
-        book_Title,
-        bookCover_URL,
-        volume_Index,
-        volume_Title,
-        author,
-        genre,
-        total_Chapter,
-        last_Updated_Chapter,
-        book_Description,
-        likes_Numbers,
-        comments_Numbers,
-        rating_Average,
-      } = bookExist;
-
-      // {bookinfo block} //...
-      //make book info json
-      let bookInfo1 = {
-        bookId,
-        book_Title,
-        bookCover_URL,
-        volume_Index,
-        volume_Title,
-        author,
-        genre,
-        total_Chapter,
-        last_Updated_Chapter,
-        book_Description,
-        likes_Numbers,
-        comments_Numbers,
-        rating_Average,
-      };
-      res.status(200).send(bookInfo1);
-      // ...//
-    } else {
+    if(!req.query.book){
       res.status(404).send({ data: "error no book found" });
+      return;
     }
-  } catch (error) {
-    console.log(error);
-    res.status(400).send({ data: "page not found" });
-  }
-});
-router.get("/:slug/:slug2/getChapter", async (req, res) => {
+      console.log("reuest at getchapter",req.query)
+      console.log("req for book info");
+      let book_Title = req.query.book.trim().toLowerCase().replace(" ", "-");
+      const bookExist = await BookInfo.findOne({ book_Title: book_Title }); //mern#09
+      if (bookExist) {
+        const {
+          bookId,
+          book_Title,
+          bookCover_URL,
+          volume_Index,
+          volume_Title,
+          author,
+          genre,
+          total_Chapter,
+          last_Updated_Chapter,
+          book_Description,
+          likes_Numbers,
+          comments_Numbers,
+          rating_Average,
+        } = bookExist;
+  
+        // {bookinfo block} //...
+        //make book info json
+        let bookInfo1 = {
+          bookId,
+          book_Title,
+          bookCover_URL,
+          volume_Index,
+          volume_Title,
+          author,
+          genre,
+          total_Chapter,
+          last_Updated_Chapter,
+          book_Description,
+          likes_Numbers,
+          comments_Numbers,
+          rating_Average,
+        };
+        res.status(200).send(bookInfo1);
+        // ...//
+      } else {
+        res.status(404).send({ data: "error no book found" });
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(400).send({ data: "page not found" });
+    }
+  });
+
+
+router.get("/getChapter", async (req, res) => {
   try {
-    let book_Title = req.params.slug.trim().toLowerCase().replace(/\s/g, "-");
+      if(!req.query.book || !req.query.chapter){
+        res.status(404).send({ data: "error no book found" });
+        return;
+      }
+    let book_Title = req.query.book.trim().toLowerCase().replace(/\s/g, "-");
 
     const bookExist = await BookInfo.findOne({ book_Title: book_Title }); //mern#09
     // console.log("bookExist==>", bookExist.chapters)
     // {chapter block} //...
-    let chapterIndex = req.params.slug2;
+    let chapterIndex = req.query.chapter;
     chapterIndex = parseFloat(chapterIndex.replace("chapter-", ""));
     if (!chapterIndex) {
       res.status(404).send({ data: "chapter found" });
@@ -153,6 +164,7 @@ router.get("/:slug/:slug2/getChapter", async (req, res) => {
     console.log("error at sending chapter", error);
   }
 });
+
 // post functions
 router.post("/register", async (req, res) => {
   try {
@@ -548,3 +560,55 @@ router.get("/logout", async (req, res) => {
 });
 
 module.exports = router;
+
+// router.get("/getChapter/:slug", async (req, res) => {
+//   try {
+//     console.log("req for book info");
+//     let book_Title = req.params.slug.trim().toLowerCase().replace(" ", "-");
+//     const bookExist = await BookInfo.findOne({ book_Title: book_Title }); //mern#09
+//     if (bookExist) {
+//       const {
+//         bookId,
+//         book_Title,
+//         bookCover_URL,
+//         volume_Index,
+//         volume_Title,
+//         author,
+//         genre,
+//         total_Chapter,
+//         last_Updated_Chapter,
+//         book_Description,
+//         likes_Numbers,
+//         comments_Numbers,
+//         rating_Average,
+//       } = bookExist;
+
+//       // {bookinfo block} //...
+//       //make book info json
+//       let bookInfo1 = {
+//         bookId,
+//         book_Title,
+//         bookCover_URL,
+//         volume_Index,
+//         volume_Title,
+//         author,
+//         genre,
+//         total_Chapter,
+//         last_Updated_Chapter,
+//         book_Description,
+//         likes_Numbers,
+//         comments_Numbers,
+//         rating_Average,
+//       };
+//       res.status(200).send(bookInfo1);
+//       // ...//
+//     } else {
+//       res.status(404).send({ data: "error no book found" });
+//     }
+//   } catch (error) {
+//     console.log(error);
+//     res.status(400).send({ data: "page not found" });
+//   }
+// });
+
+
