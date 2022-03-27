@@ -104,7 +104,24 @@ router.get("/getBook",async(req,res)=>{
       res.status(400).send({ data: "page not found" });
     }
   });
+  
+router.get("/special",async(req,res)=>{
+  try {
+    console.log(req.headers['x-forwarded-for'])
+    if(req.connection.remoteAddress){
+    console.log(req.connection.remoteAddress)
+    }
+    // console.log(req.connection)
+    // let temp7 = req.headers.toString() + "<==>" + req.connection.toString()
+    // const data = req.headers
+    // const data = req.connection
+    // res.status(200).send({data1: JSON.stringify(req.headers), data2 : JSON.stringify(req.connection)});
+    res.status(200).send({data1: req.headers, data2:req.connection.remoteAddress });
+  } catch (error) {
+    console.log(error)
+  }
 
+  });
 
 router.get("/getChapter", async (req, res) => {
   try {
