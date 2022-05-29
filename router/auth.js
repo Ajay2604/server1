@@ -50,6 +50,61 @@ const signOutTime = 3600000; // mili seconds
 //     console.log(error);
 //   }
 // })
+const textToImage = require('text-to-image');
+const text2png = require('text2png');
+//     let options = {
+//       debug: true,
+//       maxWidth: 720,
+//       fontSize: 18,
+//       fontFamily: 'sans-serif',
+//       lineHeight: 30,
+//       margin: 5,
+//       textColor: 'black',
+//     }
+
+const path = require('path');
+
+router.post('/image', async(req, res)=> {
+  console.log("req.body==>",req.body.txt2img)
+  res.set('Access-Control-Allow-Origin', '*')
+  res.set('Access-Control-Allow-Private-Network', 'true')
+  try {
+    const {debug, maxWidth, fontSize, fontFamily, lineHeight, margin, textColor} = req.body.option
+    
+    let options ={debug:false, bgColor:"transparent", fontSize, fontFamily, lineHeight, margin, textColor}
+    // let dataUri = await textToImage. generate(req.body.txt2img, options);
+    // let dataUri = await text2png('Hello!', {color: 'blue'})
+    let fontPath = path.join(__dirname, '../fonts/Roboto-Light.ttf')
+    // E:\react projects\server\server1\fonts\Roboto-Light.ttf
+    
+    const fontConfig = JSON.parse(fs.readFileSync("fontConfig.json").toString());
+    const {font,color,padding} = fontConfig;
+    // console.log(fontPath)
+    option2 ={
+      font: font,
+      localFontPath: fontPath ,
+      localFontName: 'Roboto',
+      color: color,
+      padding : padding
+    }
+    fs.writeFileSync('out.png', text2png(req.body.txt2img, option2));
+    fs.readFile('out.png', 'binary', function(error, data) {
+      if (error) {console.log(error,"error at png to Data URI function"); return;}
+      let buf = Buffer.from(data, 'binary');
+      let string = buf.toString('base64');
+      // fs.writeFileSync('out.txt',"data:image/png;base64,"+ string);
+      res.status(200).send({ data: "data:image/png;base64,"+ string })
+      
+    })
+
+    // res.status(200).send({ data: dataUri })
+    // res.status(200).sendFile(path.join(__dirname, "../out.png"))
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+
 router.get("/getBook",async(req,res)=>{
   try {
     if(!req.query.book){

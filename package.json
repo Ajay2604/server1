@@ -10,7 +10,9 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.0.13",
     "node-telegram-bot-api": "^0.56.0",
-    "nodemailer": "^6.7.2"
+    "nodemailer": "^6.7.2",
+    "text-to-image": "^5.2.0",
+    "text2png": "^2.3.0"
   },
   "scripts": {
     "start": "node server.js"
